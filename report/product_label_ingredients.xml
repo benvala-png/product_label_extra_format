@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!-- Étiquette 2 x 4 sur A4 (~97 x 65 mm) : assez grande pour porter la liste
+             des ingrédients. Les allergènes déclarés y ressortent en gras, comme
+             l'exige le règlement (UE) n°1169/2011. -->
+        <template id="report_simple_label2x4_ingredients">
+            <t t-set="barcode_size" t-value="'width:30mm;height:9mm'"/>
+            <t t-set="table_style" t-value="'width:97mm;height:65mm;' + table_style"/>
+            <td t-att-style="make_invisible and 'visibility:hidden;'">
+                <div class="o_label_full" t-att-style="table_style">
+
+                    <!-- product.template ignore `display_default_code`, contrairement à
+                         product.product : sur un template, display_name préfixerait le nom
+                         de « [code-barres] », déjà imprimé plus bas. -->
+                    <div class="o_label_name" style="height:2.6em;">
+                        <strong t-if="product.is_product_variant" t-field="product.display_name"/>
+                        <strong t-else="" t-field="product.name"/>
+                    </div>
+
+                    <div t-if="product.allergen_origin" style="padding:1px 4px;font-size:8px;">
+                        <strong>Origine : </strong>
+                        <span t-out="product.allergen_origin"/>
+                    </div>
+
+                    <div style="padding:1px 4px;font-size:7.5px;line-height:1.25;height:23mm;overflow:hidden;text-align:justify;">
+                        <t t-if="product.ingredients">
+                            <strong>Ingrédients : </strong>
+                            <t t-out="product._get_ingredients_html()"/>
+                        </t>
+                    </div>
+
+                    <div t-if="product.allergen_trace_ids"
+                         style="padding:0 4px;font-size:7.5px;line-height:1.25;">
+                        <em>Peut contenir des traces de :
+                            <t t-out="', '.join(product.allergen_trace_ids.mapped('name'))"/>.
+                        </em>
+                    </div>
+
+                    <div class="o_label_data">
+                        <div class="text-center o_label_left_column">
+                            <span class="text-nowrap" t-field="product.default_code"/>
+                            <t t-if="barcode">
+                                <div t-out="barcode" t-options="{'widget': 'barcode', 'symbology': 'auto', 'img_style': barcode_size}"/>
+                                <span class="text-center" t-out="barcode"/>
+                            </t>
+                        </div>
+                        <div class="text-end" style="line-height:normal">
+                            <t t-if="product.is_product_variant">
+                                <strong class="o_label_price" t-field="product.lst_price" t-options="{'widget': 'monetary', 'label_price': True}"/>
+                            </t>
+                            <t t-else="">
+                                <strong class="o_label_price" t-field="product.list_price" t-options="{'widget': 'monetary', 'label_price': True}"/>
+                            </t>
+                        </div>
+                        <div class="o_label_clear"/>
+                    </div>
+
+                </div>
+            </td>
+        </template>
+
+        <template id="report_productlabel_2x4_ingredients_inherit" inherit_id="product.report_productlabel">
+            <xpath expr="//t[@t-if=&quot;columns == 2 and rows == 7&quot;]" position="after">
+                <t t-if="columns == 2 and rows == 4">
+                    <t t-set="padding_page" t-value="'padding: 14mm 3mm'"/>
+                    <t t-set="report_to_call" t-value="'product_label_extra_format.report_simple_label2x4_ingredients'"/>
+                </t>
+            </xpath>
+        </template>
+
+    </data>
+</odoo>
