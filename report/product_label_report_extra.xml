@@ -6,12 +6,20 @@
             <t t-set="table_style" t-value="'width:66mm;height:37.1mm;' + table_style"/>
             <td t-att-style="make_invisible and 'visibility:hidden;'">
                 <div class="o_label_full" t-att-style="table_style">
+                    <!-- Étiquette rayon, lue par le client : pas de référence interne.
+                         `default_code` est ici une copie du code-barres sur 2221 fiches
+                         sur 2265 — il apparaissait donc 3 fois (préfixe du nom, colonne
+                         gauche, chiffres sous le code-barres) sur 66 mm de large.
+                         Sur un product.product, `display_default_code=False` retire le
+                         préfixe ; sur un product.template le flag est ignoré, d'où le
+                         repli sur `name` (même raison que dans l'étiquette 2x4). -->
                     <div class="o_label_name" style="white-space:nowrap;overflow:hidden;">
-                        <strong t-field="product.display_name"/>
+                        <strong t-if="product.is_product_variant"
+                                t-out="product.with_context(display_default_code=False).display_name"/>
+                        <strong t-else="" t-field="product.name"/>
                     </div>
                     <div class="o_label_data">
                         <div class="text-center o_label_left_column">
-                            <span class="text-nowrap" t-field="product.default_code"/>
                             <t t-if="barcode">
                                 <div t-out="barcode" t-options="{'widget': 'barcode', 'symbology': 'auto', 'img_style': barcode_size}"/>
                                 <span class="text-center" t-out="barcode"/>
