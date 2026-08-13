@@ -18,6 +18,16 @@
                                 t-out="product.with_context(display_default_code=False).display_name"/>
                         <strong t-else="" t-field="product.name"/>
                     </div>
+                    <!-- L'origine est une information destinée au client, et
+                         obligatoire sur les fruits et légumes non préemballés :
+                         elle est donc lisible, contrairement au bloc fournisseur
+                         qui ne sert qu'en interne. -->
+                    <div t-if="product.allergen_origin"
+                         style="padding:0 4px;font-size:10px;line-height:1.1;white-space:nowrap;overflow:hidden;">
+                        <strong>Origine : </strong>
+                        <span t-out="product.allergen_origin"/>
+                    </div>
+
                     <div class="o_label_data">
                         <div class="text-center o_label_left_column">
                             <t t-if="barcode">
