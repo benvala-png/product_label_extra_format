@@ -2,50 +2,62 @@
 <odoo>
     <data>
 
-        <!-- Étiquette 2 x 4 sur A4 (~97 x 65 mm) : assez grande pour porter la liste
-             des ingrédients. Les allergènes déclarés y ressortent en gras, comme
-             l'exige le règlement (UE) n°1169/2011. -->
+        <!-- Étiquette 2 x 4 sur A4 (~97 x 65 mm) : c'est une étiquette d'**affichage**
+             (frigo à fromage, bacs de vrac), pas une étiquette produit — donc pas de
+             code-barres ni de référence, toute la place va au texte et au prix. Les
+             allergènes déclarés ressortent en gras, comme l'exige le règlement
+             (UE) n°1169/2011. -->
         <template id="report_simple_label2x4_ingredients">
-            <t t-set="barcode_size" t-value="'width:30mm;height:9mm'"/>
             <t t-set="table_style" t-value="'width:97mm;height:65mm;' + table_style"/>
             <td t-att-style="make_invisible and 'visibility:hidden;'">
                 <div class="o_label_full" t-att-style="table_style">
 
-                    <!-- product.template ignore `display_default_code`, contrairement à
+                    <!-- La police vise celle du prix (o_label_price = 2em = 24px). Le bloc
+                         central (origine + ingrédients + traces) est borné en hauteur, donc
+                         on redescend par paliers selon la longueur du texte : mieux vaut
+                         plus petit que tronqué, la mention des allergènes étant obligatoire. -->
+                    <t t-set="traces_txt" t-value="', '.join(product.allergen_trace_ids.mapped('name'))"/>
+                    <t t-set="txt_len" t-value="len(product.ingredients or '') + 25 + (len(product.allergen_origin or '') and len(product.allergen_origin) + 20 or 0) + (len(traces_txt) and len(traces_txt) + 50 or 0)"/>
+                    <t t-set="txt_size" t-value="txt_len &lt; 121 and 24 or (txt_len &lt; 194 and 19 or (txt_len &lt; 274 and 16 or (txt_len &lt; 416 and 13 or (txt_len &lt; 580 and 11 or (txt_len &lt; 864 and 9 or 8)))))"/>
+
+                    <!-- Le nom est le premier repère du client de l'autre côté du frigo :
+                         il est écrit gros. Sur une ligne quand il tient (la plupart), sur
+                         deux et un peu plus petit pour les noms longs de fromages
+                         « Nom (Pays - Lait - Traitement) ». La hauteur qu'il ne prend pas
+                         est rendue au texte.
+                         product.template ignore `display_default_code`, contrairement à
                          product.product : sur un template, display_name préfixerait le nom
-                         de « [code-barres] », déjà imprimé plus bas. -->
-                    <div class="o_label_name" style="height:2.6em;">
+                         de « [référence] », qu'on ne veut pas sur une étiquette client. -->
+                    <t t-set="nom_court" t-value="len(product.name or '') &lt; 34"/>
+                    <t t-set="nom_size" t-value="nom_court and 22 or 18"/>
+                    <t t-set="nom_h" t-value="nom_court and '8mm' or '13.5mm'"/>
+                    <t t-set="txt_h" t-value="nom_court and '42mm' or '36mm'"/>
+
+                    <div class="o_label_name"
+                         t-attf-style="height:#{nom_h};overflow:hidden;font-size:#{nom_size}px;line-height:1.2;">
                         <strong t-if="product.is_product_variant" t-field="product.display_name"/>
                         <strong t-else="" t-field="product.name"/>
                     </div>
 
-                    <div t-if="product.allergen_origin" style="padding:1px 4px;font-size:8px;">
-                        <strong>Origine : </strong>
-                        <span t-out="product.allergen_origin"/>
-                    </div>
+                    <div t-attf-style="padding:0;height:#{txt_h};overflow:hidden;font-size:#{txt_size}px;line-height:1.25;">
+                        <div t-if="product.allergen_origin" style="padding:1px 4px;">
+                            <strong>Origine : </strong>
+                            <span t-out="product.allergen_origin"/>
+                        </div>
 
-                    <div style="padding:1px 4px;font-size:7.5px;line-height:1.25;height:23mm;overflow:hidden;text-align:justify;">
-                        <t t-if="product.ingredients">
-                            <strong>Ingrédients : </strong>
-                            <t t-out="product._get_ingredients_html()"/>
-                        </t>
-                    </div>
+                        <div style="padding:1px 4px;text-align:justify;">
+                            <t t-if="product.ingredients">
+                                <strong>Ingrédients : </strong>
+                                <t t-out="product._get_ingredients_html()"/>
+                            </t>
+                        </div>
 
-                    <div t-if="product.allergen_trace_ids"
-                         style="padding:0 4px;font-size:7.5px;line-height:1.25;">
-                        <em>Peut contenir des traces de :
-                            <t t-out="', '.join(product.allergen_trace_ids.mapped('name'))"/>.
-                        </em>
+                        <div t-if="traces_txt" style="padding:1px 4px;">
+                            <em>Peut contenir des traces de : <t t-out="traces_txt"/>.</em>
+                        </div>
                     </div>
 
                     <div class="o_label_data">
-                        <div class="text-center o_label_left_column">
-                            <span class="text-nowrap" t-field="product.default_code"/>
-                            <t t-if="barcode">
-                                <div t-out="barcode" t-options="{'widget': 'barcode', 'symbology': 'auto', 'img_style': barcode_size}"/>
-                                <span class="text-center" t-out="barcode"/>
-                            </t>
-                        </div>
                         <div class="text-end" style="line-height:normal">
                             <t t-if="product.is_product_variant">
                                 <strong class="o_label_price" t-field="product.lst_price" t-options="{'widget': 'monetary', 'label_price': True}"/>
