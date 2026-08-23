@@ -2,7 +2,14 @@
 <odoo>
     <data>
         <template id="report_simple_label3x7">
-            <t t-set="barcode_size" t-value="'width:30mm;height:13mm'"/>
+            <!-- Le code-barres était à 30 mm de large dans une colonne qui n'en
+                 fait que 26,4 mm (40 % des 66 mm de l'étiquette, réglé par le CSS
+                 du core), donc serré et parfois rogné. Un EAN-13 mesure 37,29 mm
+                 à taille nominale : à 30 mm on était à 80 %, la limite basse
+                 admise par GS1, et les codes les plus chargés devenaient
+                 illisibles au lecteur — signalé par Benjamin le 2026-08-23.
+                 On élargit la colonne ET l'image. -->
+            <t t-set="barcode_size" t-value="'width:38mm;height:14mm'"/>
             <t t-set="table_style" t-value="'width:66mm;height:37.1mm;' + table_style"/>
             <td t-att-style="make_invisible and 'visibility:hidden;'">
                 <div class="o_label_full" t-att-style="table_style">
@@ -29,7 +36,7 @@
                     </div>
 
                     <div class="o_label_data">
-                        <div class="text-center o_label_left_column">
+                        <div class="text-center o_label_left_column" style="width:60%;">
                             <t t-if="barcode">
                                 <div t-out="barcode" t-options="{'widget': 'barcode', 'symbology': 'auto', 'img_style': barcode_size}"/>
                                 <span class="text-center" t-out="barcode"/>
