@@ -20,10 +20,41 @@
                          Sur un product.product, `display_default_code=False` retire le
                          préfixe ; sur un product.template le flag est ignoré, d'où le
                          repli sur `name` (même raison que dans l'étiquette 2x4). -->
-                    <div class="o_label_name" style="white-space:nowrap;overflow:hidden;">
-                        <strong t-if="product.is_product_variant"
-                                t-out="product.with_context(display_default_code=False).display_name"/>
-                        <strong t-else="" t-field="product.name"/>
+                    <!-- Le nom tenait sur UNE ligne (`white-space:nowrap`) et tout
+                         ce qui dépassait était coupé net : « Herbier de France -
+                         Herbes de Pro… », « Rapunzel - Bouillon Cube de Légu… ».
+                         Or `.o_label_name` du cœur réserve `height: 3em`, soit
+                         trois lignes — deux restaient vides sous le nom. On
+                         autorise donc le retour à la ligne : la place est déjà
+                         là, rien en dessous ne bouge.
+
+                         Au-delà de 62 caractères, deux lignes ne suffisent plus
+                         (environ 31 caractères par ligne à cette taille) : on
+                         descend la police à 72 % et on remonte la hauteur à
+                         4,15 em.
+
+                         Ces deux nombres vont ensemble, et le piège a coûté deux
+                         rendus. `height: 3em` du cœur est exprimé dans la police
+                         de l'élément LUI-MÊME : réduire la police rétrécit la
+                         boîte d'autant, et on reste coincé à deux lignes et
+                         demie quelle que soit la taille choisie. Il faut donc
+                         poser la hauteur à 4,6 em (mesuré au rendu, pas calculé : le
+                         boîte à sa hauteur réelle d'origine (36 px) : rien en
+                         dessous ne bouge. Et il faut que trois lignes y tiennent
+                         PADDING COMPRIS — le cœur pose 2 px en haut et en bas :
+                         3 x 1,2 x 0,72 x 12 + 4 = 35,1 px, soit juste sous les
+                         36 px disponibles. Capacité ainsi portée à ~129
+                         caractères, largement au-delà du nom le plus long du
+                         catalogue (82). Les noms courts gardent la taille
+                         pleine. -->
+                    <t t-set="nom_etiquette"
+                       t-value="product.with_context(display_default_code=False).display_name
+                                if product.is_product_variant else product.name"/>
+                    <div class="o_label_name"
+                         t-att-style="'overflow:hidden;line-height:1.2;overflow-wrap:break-word;'
+                                      + ('font-size:72%;height:4.6em;'
+                                         if len(nom_etiquette or '') &gt; 62 else '')">
+                        <strong t-out="nom_etiquette"/>
                     </div>
                     <!-- L'origine est une information destinée au client, et
                          obligatoire sur les fruits et légumes non préemballés :
