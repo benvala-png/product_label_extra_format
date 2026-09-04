@@ -9,7 +9,57 @@
                  admise par GS1, et les codes les plus chargés devenaient
                  illisibles au lecteur — signalé par Benjamin le 2026-08-23.
                  On élargit la colonne ET l'image. -->
-            <t t-set="barcode_size" t-value="'width:38mm;height:14mm'"/>
+            <!-- 2026-08-28 : 38 mm ne suffisait pas, il fallait 38,27 mm.
+                 Le Canon TS7450i rastérise à 600 dpi (son PPD force
+                 HWResolution [600 600] pour les trois qualités), donc 38 mm =
+                 898 points. Or Odoo génère l'image du code-barres en 600 px par
+                 défaut : 600 px étalés sur 898 points, rapport 1,497, non
+                 entier. Mesuré sur un vrai code (4026913121751) : une même
+                 barre fine sortait tantôt sur 7 points, tantôt sur 8, tantôt
+                 sur 9 — 28,6 % d'écart, plus 84 points de bord ni noirs ni
+                 blancs. Le lecteur de caisse (linéaire, plusieurs milliers de
+                 points par balayage) encaissait ; l'imageur 640x480 du
+                 BCST-23 sans fil décrochait.
+
+                 La cible se lit sur un rendu réel, pas sur un calcul : le
+                 gabarit de planche utilise le format papier « A4 Label Sheet »
+                 réglé à 96 dpi, donc wkhtmltopdf raisonne en pixels CSS de
+                 1/96 de pouce ET arrondit la largeur à l'entier. Demander
+                 38,27 mm (144,65 px) donnait 144 px, et l'image de 904 px
+                 était rééchantillonnée à 900 — on remettait un rapport non
+                 entier là où on voulait l'enlever.
+
+                 On exprime donc la largeur directement dans l'unité où la
+                 décision se prend : 144 px CSS = 1,5 pouce = exactement 900
+                 points à 600 dpi, et on génère l'image en 900 px. Un pixel de
+                 l'image = un point de l'imprimante, aucun rééchantillonnage
+                 nulle part : les barres sont imprimées telles qu'elles ont été
+                 calculées, bords francs, aucun point gris.
+
+                 Reste 900 / 113 = 7,96 points par module, donc des barres
+                 fines à 7 ou 8 points. L'alignement parfait est hors de portée
+                 ici (il faudrait une largeur à la fois multiple de 113 points
+                 et entière en pixels CSS, ce qui n'arrive qu'à partir de
+                 119 mm) — mais cet écart-là reste dans la tolérance GS1, alors
+                 que les bords flous, eux, sont ce qui fait décrocher un
+                 lecteur.
+
+                 Les deux nombres vont ensemble : changer la largeur du cadre
+                 sans changer celle de l'image, ou l'inverse, réintroduit un
+                 rééchantillonnage. Et le tout dépend du format papier restant
+                 à 96 dpi.
+
+                 Le réglage vise l'EAN-13, qui est le cas de 2 255 des 2 390
+                 codes du catalogue. Les codes courts (12 chiffres et moins,
+                 rendus en Code128) n'ont pas le même nombre de modules, donc
+                 pas l'alignement exact — mais ils sont trois à quatre fois
+                 moins denses, la marge y est confortable.
+
+                 La colonne fait 60 % de 66 mm, soit 39,6 mm : 38,27 mm y tient.
+                 Voir aussi les options d'impression envoyées par
+                 product_label_direct_print (noir et blanc, pas de mise à
+                 l'échelle CUPS), qui font partie du même correctif. -->
+            <t t-set="barcode_size" t-value="'width:144px;height:52px'"/>
             <t t-set="table_style" t-value="'width:66mm;height:37.1mm;' + table_style"/>
             <td t-att-style="make_invisible and 'visibility:hidden;'">
                 <div class="o_label_full" t-att-style="table_style">
@@ -69,7 +119,7 @@
                     <div class="o_label_data">
                         <div class="text-center o_label_left_column" style="width:60%;">
                             <t t-if="barcode">
-                                <div t-out="barcode" t-options="{'widget': 'barcode', 'symbology': 'auto', 'img_style': barcode_size}"/>
+                                <div t-out="barcode" t-options="{'widget': 'barcode', 'symbology': 'auto', 'width': 900, 'height': 325, 'img_style': barcode_size}"/>
                                 <span class="text-center" t-out="barcode"/>
                             </t>
                         </div>
