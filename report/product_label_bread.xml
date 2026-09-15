@@ -34,7 +34,7 @@
                          par rapport à la version « prix à gauche ». -->
                     <t t-set="traces_txt" t-value="', '.join(product.allergen_trace_ids.mapped('name'))"/>
                     <t t-set="nom_len" t-value="len(product.name or '')"/>
-                    <t t-set="nom_size" t-value="nom_len &lt;= 16 and 16 or (nom_len &lt;= 24 and 14 or 13)"/>
+                    <t t-set="nom_size" t-value="nom_len &lt;= 16 and 22 or (nom_len &lt;= 24 and 19 or 17)"/>
                     <t t-set="txt_len" t-value="14 + len(product.ingredients or '') + (len(traces_txt) and 10 + len(traces_txt) or 0)"/>
                     <t t-set="txt_size" t-value="txt_len &lt; 100 and 13 or (txt_len &lt; 150 and 11 or (txt_len &lt; 220 and 10 or 9))"/>
 
