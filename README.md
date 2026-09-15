@@ -1,9 +1,10 @@
 # product_label_extra_format (Odoo 16)
 
-Addon Odoo 16 qui ajoute deux formats supplémentaires à l'assistant standard
+Addon Odoo 16 qui ajoute trois formats supplémentaires à l'assistant standard
 d'impression d'étiquettes produit : **3×7** (nom sur une ligne + fournisseur/
-date auto-pricing en petit) et **2×4 avec ingrédients et allergènes**
-(étiquette d'affichage frigo/vrac, sans code-barres).
+date auto-pricing en petit), **2×4 avec ingrédients et allergènes**
+(étiquette d'affichage frigo/vrac, sans code-barres) et **Pain — ingrédients/
+allergènes** (2×6, bornée à 4 cm, prix en grand à gauche).
 
 ---
 
@@ -13,6 +14,7 @@ date auto-pricing en petit) et **2×4 avec ingrédients et allergènes**
 |---|---|
 | Format **3×7** (`3x7xprice`) | Étiquette produit classique avec code-barres, dimensionnée pour rester lisible au lecteur sans fil ; affiche en petit le dernier fournisseur/date d'auto-pricing |
 | Format **2×4 ingrédients** (`2x4xingredients`) | Étiquette d'**affichage** (frigo à fromage, bacs de vrac) : pas de code-barres ni de référence, toute la place va au nom, à l'origine, aux ingrédients (allergènes en gras) et aux traces possibles |
+| Format **Pain** (`2x6xingredients`) | Étiquette **Pain — ingrédients/allergènes** : nom en tête, prix en grand à gauche, ingrédients (allergènes en gras) et traces à droite. Case bornée à 4 cm de haut. Les fiches sans ingrédients renseignés sont écartées du lot avant impression, pas imprimées vides |
 | Taille de texte adaptative | Le bloc ingrédients/origine/traces redescend en taille de police par paliers selon la longueur du texte, plutôt que de tronquer une mention obligatoire |
 
 ---
@@ -31,11 +33,12 @@ date auto-pricing en petit) et **2×4 avec ingrédients et allergènes**
 
 Depuis l'assistant standard d'impression d'étiquettes (**Imprimer les
 étiquettes** sur une liste de produits), le champ **Format** propose en plus
-« 3 x 7 with price » et « 2 x 4 avec ingrédients et allergènes ». S'utilise
-avec `product_label_direct_print` pour l'impression directe, ou par
-téléchargement PDF classique.
+« 3 x 7 with price », « 2 x 4 avec ingrédients et allergènes » et « Pain —
+ingrédients/allergènes (2 x 6, 4 cm) ». S'utilise avec
+`product_label_direct_print` pour l'impression directe (imprimante A4
+TS7450i), ou par téléchargement PDF classique.
 
-Le format 2×4 lit `product._get_ingredients_html()` (module
+Les formats 2×4 et Pain lisent `product._get_ingredients_html()` (module
 `product_allergen`) pour la mise en gras des allergènes déclarés, exigée par
 le règlement (UE) n°1169/2011.
 
@@ -47,7 +50,8 @@ le règlement (UE) n°1169/2011.
 
 | Champ | Type | Description |
 |---|---|---|
-| `print_format` | Selection (extension) | Ajoute `3x7xprice` et `2x4xingredients` aux formats standard |
+| `print_format` | Selection (extension) | Ajoute `3x7xprice`, `2x4xingredients` et `2x6xingredients` (Pain) aux formats standard |
+| `bread_label_skipped` | Char | Noms des fiches écartées du dernier tirage Pain faute d'ingrédients — sert à la notification de fin de tirage, jamais affiché dans une vue |
 
 ### `product.product`
 
@@ -61,7 +65,7 @@ le règlement (UE) n°1169/2011.
 ## Utilisé par / dépend de
 
 - **`product_auto_pricing`** — fournit `x_last_auto_date` / `x_last_auto_supplier_id` affichés sur le format 3×7
-- **`product_allergen`** — fournit `ingredients`, `allergen_trace_ids`, `allergen_origin` et `_get_ingredients_html()` pour le format 2×4
+- **`product_allergen`** — fournit `ingredients`, `allergen_trace_ids`, `allergen_origin` et `_get_ingredients_html()` pour les formats 2×4 et Pain
 - **`product_label_direct_print`** — les deux formats s'impriment par son bouton « Imprimer »
 
 ---
@@ -77,7 +81,8 @@ product_label_extra_format/
 │   └── product_product.py            # Champs related fournisseur/date auto-pricing
 └── report/
     ├── product_label_report_extra.xml    # Gabarit 3x7 + réglages code-barres
-    └── product_label_ingredients.xml     # Gabarit 2x4 ingrédients/allergènes
+    ├── product_label_ingredients.xml     # Gabarit 2x4 ingrédients/allergènes
+    └── product_label_bread.xml           # Gabarit Pain 2x6, prix à gauche
 ```
 
 ---
