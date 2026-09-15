@@ -12,7 +12,7 @@ class ProductLabelLayout(models.TransientModel):
         selection_add=[
             ('3x7xprice', '3 x 7 with price'),
             ('2x4xingredients', "2 x 4 avec ingrédients et allergènes"),
-            (FORMAT_PAIN, "2 x 6 pain — ingrédients/allergènes (4 cm)"),
+            (FORMAT_PAIN, "Pain — ingrédients/allergènes (2 x 6, 4 cm)"),
         ],
         ondelete={
             '3x7xprice': 'set default',
