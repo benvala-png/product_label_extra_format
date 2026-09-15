@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!-- Étiquette pain sur planche A4 : nom, prix, ingrédients avec
+             allergènes en gras (règlement UE 1169/2011), traces — bornée à
+             3 cm de hauteur (demande de Benjamin, 2026-09-15), largeur reprise
+             du format 2x4 existant (97 mm, déjà validée au papier). 8 rangées
+             au lieu de 4 : 8 x 30 mm = 240 mm tient sous les ~269 mm
+             disponibles après le padding_page de 14 mm haut/bas ; 9 rangées
+             (270 mm) ne tiendrait plus. -->
+        <template id="report_simple_label2x8_ingredients">
+            <!-- Ne PAS utiliser les classes o_label_full/o_label_name de base :
+                 `div.o_label_name{height:3em}` (voir report_label_sheet.scss)
+                 se calcule sur le corps du NOM (jusqu'à 18px ici), donc jusqu'à
+                 54px = 14 mm rien que pour le nom — près de la moitié du
+                 budget de 30 mm à elle seule, mesuré au rendu réel le
+                 2026-09-15 (tout le texte débordait, tronqué net par
+                 l'overflow:hidden hérité). Boîte maison entièrement bornée,
+                 comme sur le format rouleau équivalent (bread_label_report.xml
+                 de product_shelf_label, même principe, seuils identiques —
+                 le budget total ici est légèrement plus large car la colonne
+                 est plus étroite en hauteur mais le calibrage rouleau reste
+                 valable : marge encore plus confortable ici, la boîte est
+                 aussi large que haute est petite). -->
+            <t t-set="table_style" t-value="'width:97mm;height:30mm;' + table_style"/>
+            <td t-att-style="make_invisible and 'visibility:hidden;'">
+                <div t-attf-style="#{table_style}box-sizing:border-box;overflow:hidden;padding:5px 6px;font-family:'Roboto Condensed','Nimbus Sans Narrow','Archivo Narrow','Liberation Sans Narrow',Arial,sans-serif;color:#000;">
+                    <!-- Même principe de paliers que le 2x4 (mieux vaut plus
+                         petit que tronqué, l'allergène étant obligatoire),
+                         seuils calibrés au rendu réel le 2026-09-15. -->
+                    <t t-set="traces_txt" t-value="', '.join(product.allergen_trace_ids.mapped('name'))"/>
+                    <t t-set="nom_len" t-value="len(product.name or '')"/>
+                    <t t-set="nom_size" t-value="nom_len &lt;= 16 and 16 or (nom_len &lt;= 24 and 14 or 13)"/>
+                    <t t-set="txt_len" t-value="14 + len(product.ingredients or '') + (len(traces_txt) and 10 + len(traces_txt) or 0)"/>
+                    <t t-set="txt_size" t-value="txt_len &lt; 100 and 11 or (txt_len &lt; 150 and 10 or (txt_len &lt; 220 and 9 or 8))"/>
+
+                    <div t-attf-style="font-weight:700;line-height:1.1;font-size:#{nom_size}px;">
+                        <t t-if="product.is_product_variant" t-esc="product.display_name"/>
+                        <t t-else="" t-esc="product.name"/>
+                    </div>
+
+                    <div style="font-weight:700;font-size:20px;line-height:1;margin-top:2px;">
+                        <t t-if="product.is_product_variant">
+                            <span t-field="product.lst_price" t-options="{'widget': 'monetary', 'label_price': True}"/>
+                        </t>
+                        <t t-else="">
+                            <span t-field="product.list_price" t-options="{'widget': 'monetary', 'label_price': True}"/>
+                        </t>
+                    </div>
+
+                    <div t-attf-style="margin-top:3px;font-size:#{txt_size}px;line-height:1.2;">
+                        <t t-if="product.ingredients">
+                            <strong>Ingrédients : </strong><t t-out="product._get_ingredients_html()"/>
+                        </t>
+                        <t t-if="traces_txt">
+                            <t t-if="product.ingredients"> — </t>
+                            <em>Traces : <t t-esc="traces_txt"/>.</em>
+                        </t>
+                    </div>
+                </div>
+            </td>
+        </template>
+
+        <template id="report_productlabel_2x8_ingredients_inherit" inherit_id="product.report_productlabel">
+            <xpath expr="//t[@t-if=&quot;columns == 2 and rows == 4&quot;]" position="after">
+                <t t-if="columns == 2 and rows == 8">
+                    <t t-set="padding_page" t-value="'padding: 14mm 3mm'"/>
+                    <t t-set="report_to_call" t-value="'product_label_extra_format.report_simple_label2x8_ingredients'"/>
+                </t>
+            </xpath>
+        </template>
+
+    </data>
+</odoo>
