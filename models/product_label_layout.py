@@ -2,7 +2,7 @@
 from odoo import _, fields, models
 from odoo.exceptions import UserError
 
-FORMAT_PAIN = '2x8xingredients'
+FORMAT_PAIN = '2x6xingredients'
 
 
 class ProductLabelLayout(models.TransientModel):
@@ -12,7 +12,7 @@ class ProductLabelLayout(models.TransientModel):
         selection_add=[
             ('3x7xprice', '3 x 7 with price'),
             ('2x4xingredients', "2 x 4 avec ingrédients et allergènes"),
-            (FORMAT_PAIN, "2 x 8 pain — ingrédients/allergènes (3 cm)"),
+            (FORMAT_PAIN, "2 x 6 pain — ingrédients/allergènes (4 cm)"),
         ],
         ondelete={
             '3x7xprice': 'set default',
