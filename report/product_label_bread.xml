@@ -2,14 +2,18 @@
 <odoo>
     <data>
 
-        <!-- Étiquette pain sur planche A4 : nom en tête, puis prix EN GRAND À
-             GAUCHE et ingrédients (allergènes en gras, règlement UE 1169/2011)
-             + traces à droite. Bornée à 4 cm de hauteur (relevé de 3 à 4 cm le
-             2026-09-15, après le premier tirage réel). 6 rangées au lieu de 8 :
-             6 x 40 mm = 240 mm tient sous les ~269 mm disponibles après le
-             padding_page de 14 mm haut/bas ; 7 rangées (280 mm) ne tiendrait
-             plus. Largeur reprise du format 2x4 existant (97 mm, déjà validée
-             au papier). -->
+        <!-- Étiquette pain sur planche A4 : nom en haut à gauche, prix EN
+             GRAND EN HAUT À DROITE, ingrédients (allergènes en gras,
+             règlement UE 1169/2011) + traces sur toute la largeur en dessous.
+             Bornée à 4 cm de hauteur. 6 rangées : 6 x 40 mm = 240 mm tient
+             sous les ~269 mm disponibles après le padding_page de 14 mm
+             haut/bas ; 7 rangées (280 mm) ne tiendrait plus. Largeur reprise
+             du format 2x4 existant (97 mm, déjà validée au papier).
+
+             Historique du positionnement du prix (2026-09-15) : d'abord en
+             dessous du nom en petit, puis à gauche des ingrédients en grand
+             (mauvaise lecture de la demande), puis ici — en haut à droite,
+             en grand, sur la même ligne que le nom. Voir bread_label_module.md. -->
         <template id="report_simple_label2x6_ingredients">
             <!-- Ne PAS utiliser les classes o_label_full/o_label_name de base :
                  `div.o_label_name{height:3em}` (voir report_label_sheet.scss)
@@ -24,23 +28,22 @@
                 <div t-attf-style="#{table_style}box-sizing:border-box;overflow:hidden;padding:5px 6px;font-family:'Roboto Condensed','Nimbus Sans Narrow','Archivo Narrow','Liberation Sans Narrow',Arial,sans-serif;color:#000;">
                     <!-- Même principe de paliers que le 2x4 (mieux vaut plus
                          petit que tronqué, l'allergène étant obligatoire),
-                         seuils calibrés au rendu réel. Le texte occupe
-                         maintenant une colonne plus étroite (le prix prend la
-                         gauche), donc la longueur cumulée bascule plus tôt
-                         vers les petites tailles qu'en pleine largeur. -->
+                         seuils calibrés au rendu réel. Le texte reprend toute
+                         la largeur (le prix est maintenant sur la ligne du
+                         nom, pas à côté du texte), donc les seuils remontent
+                         par rapport à la version « prix à gauche ». -->
                     <t t-set="traces_txt" t-value="', '.join(product.allergen_trace_ids.mapped('name'))"/>
                     <t t-set="nom_len" t-value="len(product.name or '')"/>
                     <t t-set="nom_size" t-value="nom_len &lt;= 16 and 16 or (nom_len &lt;= 24 and 14 or 13)"/>
                     <t t-set="txt_len" t-value="14 + len(product.ingredients or '') + (len(traces_txt) and 10 + len(traces_txt) or 0)"/>
-                    <t t-set="txt_size" t-value="txt_len &lt; 70 and 11 or (txt_len &lt; 110 and 10 or (txt_len &lt; 160 and 9 or 8))"/>
+                    <t t-set="txt_size" t-value="txt_len &lt; 100 and 13 or (txt_len &lt; 150 and 11 or (txt_len &lt; 220 and 10 or 9))"/>
 
-                    <div t-attf-style="font-weight:700;line-height:1.1;font-size:#{nom_size}px;">
-                        <t t-if="product.is_product_variant" t-esc="product.display_name"/>
-                        <t t-else="" t-esc="product.name"/>
-                    </div>
-
-                    <div style="display:flex;align-items:flex-start;margin-top:4px;">
-                        <div style="width:32mm;flex:0 0 32mm;font-weight:700;font-size:32px;line-height:1;padding-right:4px;box-sizing:border-box;">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+                        <div t-attf-style="flex:1;min-width:0;font-weight:700;line-height:1.1;font-size:#{nom_size}px;padding-right:4px;">
+                            <t t-if="product.is_product_variant" t-esc="product.display_name"/>
+                            <t t-else="" t-esc="product.name"/>
+                        </div>
+                        <div style="flex:0 0 auto;font-weight:700;font-size:32px;line-height:1;text-align:right;white-space:nowrap;">
                             <t t-if="product.is_product_variant">
                                 <span t-field="product.lst_price" t-options="{'widget': 'monetary', 'label_price': True}"/>
                             </t>
@@ -48,15 +51,16 @@
                                 <span t-field="product.list_price" t-options="{'widget': 'monetary', 'label_price': True}"/>
                             </t>
                         </div>
-                        <div t-attf-style="flex:1;min-width:0;font-size:#{txt_size}px;line-height:1.25;">
-                            <t t-if="product.ingredients">
-                                <strong>Ingrédients : </strong><t t-out="product._get_ingredients_html()"/>
-                            </t>
-                            <t t-if="traces_txt">
-                                <t t-if="product.ingredients"> — </t>
-                                <em>Traces : <t t-esc="traces_txt"/>.</em>
-                            </t>
-                        </div>
+                    </div>
+
+                    <div t-attf-style="margin-top:4px;font-size:#{txt_size}px;line-height:1.25;">
+                        <t t-if="product.ingredients">
+                            <strong>Ingrédients : </strong><t t-out="product._get_ingredients_html()"/>
+                        </t>
+                        <t t-if="traces_txt">
+                            <t t-if="product.ingredients"> — </t>
+                            <em>Traces : <t t-esc="traces_txt"/>.</em>
+                        </t>
                     </div>
                 </div>
             </td>
