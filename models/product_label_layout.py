@@ -3,6 +3,7 @@ from odoo import _, fields, models
 from odoo.exceptions import UserError
 
 FORMAT_PAIN = '2x6xingredients'
+FORMAT_MINI = '8x10xmini'
 
 
 class ProductLabelLayout(models.TransientModel):
@@ -13,11 +14,13 @@ class ProductLabelLayout(models.TransientModel):
             ('3x7xprice', '3 x 7 with price'),
             ('2x4xingredients', "2 x 4 avec ingrédients et allergènes"),
             (FORMAT_PAIN, "Pain — ingrédients/allergènes (2 x 6, 4 cm)"),
+            (FORMAT_MINI, "Mini — 8 x 10, sans code-barres (huile essentielle)"),
         ],
         ondelete={
             '3x7xprice': 'set default',
             '2x4xingredients': 'set default',
             FORMAT_PAIN: 'set default',
+            FORMAT_MINI: 'set default',
         },
     )
 
