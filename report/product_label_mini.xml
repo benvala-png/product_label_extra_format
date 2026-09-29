@@ -25,7 +25,7 @@
                        t-value="product.with_context(display_default_code=False).display_name
                                 if product.is_product_variant else product.name"/>
                     <div class="o_label_name"
-                         style="height:33px;font-size:16px;line-height:1.2;
+                         style="height:41px;font-size:20px;line-height:1.2;
                                 overflow:hidden;overflow-wrap:break-word;padding:2px 3px;">
                         <strong t-out="nom_etiquette"/>
                     </div>
