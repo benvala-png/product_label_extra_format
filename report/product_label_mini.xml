@@ -26,7 +26,7 @@
              réglages précédents (41px pour 20px/2 lignes, 33px pour
              16px/2 lignes — les deux collent exactement à cette formule). -->
         <template id="report_simple_label_mini">
-            <t t-set="table_style" t-value="'width:36mm;height:30mm;' + table_style"/>
+            <t t-set="table_style" t-value="'width:36mm;height:30mm;position:relative;' + table_style"/>
             <td t-att-style="make_invisible and 'visibility:hidden;'">
                 <div class="o_label_full" t-att-style="table_style">
                     <!-- Même repli que l'étiquette 3x7 : display_name préfixe
@@ -40,16 +40,27 @@
                        t-value="brut.split('-', 1)[1].strip()
                                 if brut.lower().startswith('bioflore') and '-' in brut
                                 else brut"/>
+                    <!-- La zone du nom est montée au maximum de ce que la
+                         boîte de 30mm laisse (~113px) une fois le prix
+                         retiré (~30px) : jusqu'à 58px, contre 40px avant.
+                         Polices remontées d'un cran à chaque palier plutôt
+                         que de continuer à les réduire. -->
                     <t t-set="n" t-value="len(nom_sans_marque)"/>
-                    <t t-set="nom_taille" t-value="20 if n &lt;= 18 else (15 if n &lt;= 30 else 12)"/>
-                    <t t-set="nom_lignes" t-value="2 if n &lt;= 30 else 3"/>
+                    <t t-set="nom_taille" t-value="20 if n &lt;= 16 else (16 if n &lt;= 34 else 14)"/>
+                    <t t-set="nom_lignes" t-value="2 if n &lt;= 16 else (3 if n &lt;= 34 else 4)"/>
                     <t t-set="nom_hauteur" t-value="int(0.86 * nom_lignes * nom_taille * 1.2)"/>
                     <div class="o_label_name"
                          t-attf-style="height:#{nom_hauteur}px;font-size:#{nom_taille}px;line-height:1.2;
-                                       overflow:hidden;overflow-wrap:break-word;padding:2px 3px;">
+                                       overflow:hidden;word-wrap:break-word;overflow-wrap:break-word;
+                                       word-break:break-word;padding:2px 3px;">
                         <strong t-out="nom_sans_marque"/>
                     </div>
-                    <div class="text-center" style="padding:2px 3px;">
+                    <!-- Ancré en bas de l'étiquette (position absolute dans
+                         .o_label_full, mis en position:relative ci-dessus)
+                         plutôt que juste sous le nom : reste au même
+                         endroit quelle que soit la hauteur prise par le nom,
+                         demandé le 2026-09-29. -->
+                    <div class="text-center" style="padding:2px 3px;position:absolute;left:0;right:0;bottom:2px;">
                         <t t-if="product.is_product_variant">
                             <strong style="font-size:22px;" t-field="product.lst_price" t-options="{'widget': 'monetary', 'label_price': True}"/>
                         </t>
