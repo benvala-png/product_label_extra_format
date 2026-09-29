@@ -2,15 +2,22 @@
 <odoo>
     <data>
 
-        <!-- Étiquette mini, ~24 mm de large (8 colonnes sur l'A4) : pour les
+        <!-- Étiquette mini, ~36 mm de large (5 colonnes sur l'A4) : pour les
              petits contenants (huiles essentielles, flacons) où une étiquette
              produit classique (66-97 mm) ne tient pas. Pas de code-barres ni
              de référence — juste ce qu'un client lit sur le rayon, nom et
-             prix, comme demandé le 2026-09-29. -->
+             prix, comme demandé le 2026-09-29.
+             Agrandie de 50% le même jour (24→36 mm, 20→30 mm) : la première
+             version était illisible une fois imprimée. La cause n'était pas
+             la taille de l'étiquette mais la police, réduite DEUX fois de
+             suite (classe o_label_small_text à 60% du cœur, puis 90% de plus
+             en style inline = 54% de la taille normale). On fixe donc les
+             tailles en px absolus plutôt qu'en % d'un parent, pour ne plus
+             dépendre d'un empilement invisible. -->
         <template id="report_simple_label_mini">
-            <t t-set="table_style" t-value="'width:24mm;height:20mm;' + table_style"/>
+            <t t-set="table_style" t-value="'width:36mm;height:30mm;' + table_style"/>
             <td t-att-style="make_invisible and 'visibility:hidden;'">
-                <div class="o_label_full o_label_small_text" t-att-style="table_style">
+                <div class="o_label_full" t-att-style="table_style">
                     <!-- Même repli que l'étiquette 3x7 : display_name préfixe
                          la référence interne sur un product.product, jamais
                          voulu sur une étiquette client. -->
@@ -18,16 +25,16 @@
                        t-value="product.with_context(display_default_code=False).display_name
                                 if product.is_product_variant else product.name"/>
                     <div class="o_label_name"
-                         style="height:2.1em;font-size:90%;line-height:1.15;
-                                overflow:hidden;overflow-wrap:break-word;padding:1px 2px;">
+                         style="height:33px;font-size:16px;line-height:1.2;
+                                overflow:hidden;overflow-wrap:break-word;padding:2px 3px;">
                         <strong t-out="nom_etiquette"/>
                     </div>
-                    <div class="text-center" style="padding:1px 2px;">
+                    <div class="text-center" style="padding:2px 3px;">
                         <t t-if="product.is_product_variant">
-                            <strong class="o_label_price_small" t-field="product.lst_price" t-options="{'widget': 'monetary', 'label_price': True}"/>
+                            <strong style="font-size:22px;" t-field="product.lst_price" t-options="{'widget': 'monetary', 'label_price': True}"/>
                         </t>
                         <t t-else="">
-                            <strong class="o_label_price_small" t-field="product.list_price" t-options="{'widget': 'monetary', 'label_price': True}"/>
+                            <strong style="font-size:22px;" t-field="product.list_price" t-options="{'widget': 'monetary', 'label_price': True}"/>
                         </t>
                     </div>
                 </div>
@@ -36,7 +43,7 @@
 
         <template id="report_productlabel_mini_inherit" inherit_id="product.report_productlabel">
             <xpath expr="//t[@t-if=&quot;columns == 2 and rows == 7&quot;]" position="after">
-                <t t-if="columns == 8 and rows == 10">
+                <t t-if="columns == 5 and rows == 8">
                     <t t-set="padding_page" t-value="'padding: 10mm 3mm'"/>
                     <t t-set="report_to_call" t-value="'product_label_extra_format.report_simple_label_mini'"/>
                 </t>
