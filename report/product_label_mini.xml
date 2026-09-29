@@ -7,13 +7,24 @@
              produit classique (66-97 mm) ne tient pas. Pas de code-barres ni
              de référence — juste ce qu'un client lit sur le rayon, nom et
              prix, comme demandé le 2026-09-29.
-             Agrandie de 50% le même jour (24→36 mm, 20→30 mm) : la première
-             version était illisible une fois imprimée. La cause n'était pas
-             la taille de l'étiquette mais la police, réduite DEUX fois de
-             suite (classe o_label_small_text à 60% du cœur, puis 90% de plus
-             en style inline = 54% de la taille normale). On fixe donc les
-             tailles en px absolus plutôt qu'en % d'un parent, pour ne plus
-             dépendre d'un empilement invisible. -->
+             Agrandie de 50% le même jour (24→36 mm, 20→30 mm), puis la
+             police du nom montée à 20px : toujours illisible en pratique,
+             pas à cause de la taille mais parce que TOUT était forcé sur une
+             police fixe et 2 lignes — or les noms vont de 13 à 46 caractères
+             (catalogue Bioflore, une fois la marque retirée). Passage à une
+             taille adaptative, même principe que le format 2x4 ingrédients
+             du même module (`nom_court` / `nom_size`) : plus le nom est
+             long, plus la police descend et plus on autorise de lignes.
+             La marque est retirée de l'affichage (déjà sur 87 des 98 fiches
+             Bioflore actuelles, "Bioflore - Nom - Poids") pour ne pas
+             gâcher de la place avec une information déjà connue en rayon —
+             seulement quand le nom COMMENCE par la marque, jamais si
+             "Bioflore" est ailleurs dans le nom (ex. "Diffuseur par
+             capillarité - Bioflore", marque en suffixe, laissé intact).
+             Hauteur de boîte = 0.86 × lignes × police × 1.2 : facteur
+             empirique qui a évité le reliquat de ligne tronquée sur les deux
+             réglages précédents (41px pour 20px/2 lignes, 33px pour
+             16px/2 lignes — les deux collent exactement à cette formule). -->
         <template id="report_simple_label_mini">
             <t t-set="table_style" t-value="'width:36mm;height:30mm;' + table_style"/>
             <td t-att-style="make_invisible and 'visibility:hidden;'">
@@ -24,10 +35,19 @@
                     <t t-set="nom_etiquette"
                        t-value="product.with_context(display_default_code=False).display_name
                                 if product.is_product_variant else product.name"/>
+                    <t t-set="brut" t-value="(nom_etiquette or '').strip()"/>
+                    <t t-set="nom_sans_marque"
+                       t-value="brut.split('-', 1)[1].strip()
+                                if brut.lower().startswith('bioflore') and '-' in brut
+                                else brut"/>
+                    <t t-set="n" t-value="len(nom_sans_marque)"/>
+                    <t t-set="nom_taille" t-value="20 if n &lt;= 18 else (15 if n &lt;= 30 else 12)"/>
+                    <t t-set="nom_lignes" t-value="2 if n &lt;= 30 else 3"/>
+                    <t t-set="nom_hauteur" t-value="int(0.86 * nom_lignes * nom_taille * 1.2)"/>
                     <div class="o_label_name"
-                         style="height:41px;font-size:20px;line-height:1.2;
-                                overflow:hidden;overflow-wrap:break-word;padding:2px 3px;">
-                        <strong t-out="nom_etiquette"/>
+                         t-attf-style="height:#{nom_hauteur}px;font-size:#{nom_taille}px;line-height:1.2;
+                                       overflow:hidden;overflow-wrap:break-word;padding:2px 3px;">
+                        <strong t-out="nom_sans_marque"/>
                     </div>
                     <div class="text-center" style="padding:2px 3px;">
                         <t t-if="product.is_product_variant">
