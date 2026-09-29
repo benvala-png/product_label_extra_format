@@ -42,13 +42,24 @@
                                 else brut"/>
                     <!-- La zone du nom est montée au maximum de ce que la
                          boîte de 30mm laisse (~113px) une fois le prix
-                         retiré (~30px) : jusqu'à 58px, contre 40px avant.
-                         Polices remontées d'un cran à chaque palier plutôt
-                         que de continuer à les réduire. -->
+                         retiré (~30px).
+                         Piège trouvé le 2026-09-29 sur « Tea Tree - 10ml » :
+                         la hauteur était calculée avec un facteur 0.86 pour
+                         éviter qu'une 3e ligne fantôme ne dépasse — mais ce
+                         facteur rognait parfois la VRAIE dernière ligne (le
+                         "10ml" disparaissait, coupé à mi-hauteur), ce qui
+                         est bien pire qu'un reliquat de 3e ligne. On revient
+                         à la hauteur PLEINE (lignes × police × 1.2, sans
+                         facteur de réduction) : le risque n'est plus de
+                         perdre une ligne utile, seulement de laisser parfois
+                         dépasser un soupçon d'une ligne en trop si le texte
+                         déborde du palier prévu — un défaut bien moins grave
+                         qu'une quantité invisible. Polices baissées d'un cran
+                         au passage (demandé le 2026-09-29). -->
                     <t t-set="n" t-value="len(nom_sans_marque)"/>
-                    <t t-set="nom_taille" t-value="20 if n &lt;= 16 else (16 if n &lt;= 34 else 14)"/>
+                    <t t-set="nom_taille" t-value="18 if n &lt;= 16 else (14 if n &lt;= 34 else 12)"/>
                     <t t-set="nom_lignes" t-value="2 if n &lt;= 16 else (3 if n &lt;= 34 else 4)"/>
-                    <t t-set="nom_hauteur" t-value="int(0.86 * nom_lignes * nom_taille * 1.2)"/>
+                    <t t-set="nom_hauteur" t-value="round(nom_lignes * nom_taille * 1.2) + 3"/>
                     <div class="o_label_name"
                          t-attf-style="height:#{nom_hauteur}px;font-size:#{nom_taille}px;line-height:1.2;
                                        overflow:hidden;word-wrap:break-word;overflow-wrap:break-word;
