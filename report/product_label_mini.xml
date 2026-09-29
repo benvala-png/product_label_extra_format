@@ -42,24 +42,25 @@
                                 else brut"/>
                     <!-- La zone du nom est montée au maximum de ce que la
                          boîte de 30mm laisse (~113px) une fois le prix
-                         retiré (~30px).
-                         Piège trouvé le 2026-09-29 sur « Tea Tree - 10ml » :
-                         la hauteur était calculée avec un facteur 0.86 pour
-                         éviter qu'une 3e ligne fantôme ne dépasse — mais ce
-                         facteur rognait parfois la VRAIE dernière ligne (le
-                         "10ml" disparaissait, coupé à mi-hauteur), ce qui
-                         est bien pire qu'un reliquat de 3e ligne. On revient
-                         à la hauteur PLEINE (lignes × police × 1.2, sans
-                         facteur de réduction) : le risque n'est plus de
-                         perdre une ligne utile, seulement de laisser parfois
-                         dépasser un soupçon d'une ligne en trop si le texte
-                         déborde du palier prévu — un défaut bien moins grave
-                         qu'une quantité invisible. Polices baissées d'un cran
-                         au passage (demandé le 2026-09-29). -->
+                         retiré (~30px, ancré en bas).
+                         Piège trouvé le 2026-09-29, DEUX fois de suite :
+                         « Tea Tree - 10ml » puis « Verveine - 200ml »
+                         (16 caractères pile, palier "court") coupaient tous
+                         les deux leur dernière ligne. La hauteur calculée à
+                         lignes × police × 1.2 (+3px) donnait 46px pour 2
+                         lignes à 18px — mesuré insuffisant sur le rendu réel
+                         (capture HTML brute envoyée à la passerelle
+                         d'impression). Le moteur de rendu de la passerelle
+                         prend visiblement plus de place par ligne que
+                         1.2 × la taille de police ne le suppose. On repart
+                         donc d'une marge largement plus généreuse
+                         (× 1.5 + 8px fixes) plutôt que de recalculer au plus
+                         juste une 3e fois — le risque à éviter est de perdre
+                         une ligne utile, pas de gagner quelques mm de vide. -->
                     <t t-set="n" t-value="len(nom_sans_marque)"/>
-                    <t t-set="nom_taille" t-value="18 if n &lt;= 16 else (14 if n &lt;= 34 else 12)"/>
-                    <t t-set="nom_lignes" t-value="2 if n &lt;= 16 else (3 if n &lt;= 34 else 4)"/>
-                    <t t-set="nom_hauteur" t-value="round(nom_lignes * nom_taille * 1.2) + 3"/>
+                    <t t-set="nom_taille" t-value="18 if n &lt;= 16 else 13"/>
+                    <t t-set="nom_lignes" t-value="2 if n &lt;= 16 else 3"/>
+                    <t t-set="nom_hauteur" t-value="round(nom_lignes * nom_taille * 1.5) + 8"/>
                     <div class="o_label_name"
                          t-attf-style="height:#{nom_hauteur}px;font-size:#{nom_taille}px;line-height:1.2;
                                        overflow:hidden;word-wrap:break-word;overflow-wrap:break-word;
