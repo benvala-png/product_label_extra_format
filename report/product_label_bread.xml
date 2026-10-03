@@ -40,6 +40,10 @@
                          5 mots au plus, donc toujours sous le premier palier. -->
                     <t t-set="mots_cles" t-value="not product.ingredients and product.x_mots_cles_vin"/>
                     <t t-if="mots_cles" t-set="txt_len" t-value="len(mots_cles)"/>
+                    <!-- Le code-barres prend la hauteur que le pain donne aux
+                         ingrédients : un nom de vin sur deux lignes le poussait
+                         sous le bord (Di Giovanna, 51 caractères). -->
+                    <t t-if="mots_cles and nom_len &gt; 40" t-set="nom_size" t-value="14"/>
                     <t t-set="txt_size" t-value="txt_len &lt; 100 and 13 or (txt_len &lt; 150 and 11 or (txt_len &lt; 220 and 10 or 9))"/>
 
                     <div style="display:flex;align-items:flex-start;justify-content:space-between;">
@@ -57,7 +61,7 @@
                         </div>
                     </div>
 
-                    <div t-attf-style="margin-top:4px;font-size:#{txt_size}px;line-height:1.25;">
+                    <div t-if="not mots_cles" t-attf-style="margin-top:4px;font-size:#{txt_size}px;line-height:1.25;">
                         <t t-if="product.ingredients">
                             <strong>Ingrédients : </strong><t t-out="product._get_ingredients_html()"/>
                         </t>
@@ -65,8 +69,22 @@
                             <t t-if="product.ingredients"> — </t>
                             <em>Traces : <t t-esc="traces_txt"/>.</em>
                         </t>
-                        <t t-if="mots_cles" t-esc="mots_cles"/>
                     </div>
+                    <!-- Vin : mots clés à gauche, code-barres du produit à droite
+                         (scannable en caisse). Mêmes dimensions que le 3x7,
+                         validées au lecteur : image 900 px affichée à 144 px,
+                         jamais en mm (voir etiquette_codebarres_illisible). -->
+                    <!-- Un tableau et pas du flex : le WebKit de wkhtmltopdf
+                         renvoyait le code-barres à la ligne, sous le bord. -->
+                    <table t-if="mots_cles" style="width:100%;border-collapse:collapse;margin-top:2px;">
+                        <tr>
+                            <td t-attf-style="vertical-align:middle;padding:0 6px 0 0;border:0;font-size:#{txt_size}px;line-height:1.25;" t-esc="mots_cles"/>
+                            <td t-if="barcode" style="width:144px;vertical-align:bottom;padding:0;border:0;text-align:center;font-size:9px;line-height:1.1;">
+                                <div t-out="barcode" t-options="{'widget': 'barcode', 'symbology': 'auto', 'width': 900, 'height': 325, 'img_style': 'width:144px;height:40px;display:block;margin:0 auto'}"/>
+                                <span t-out="barcode"/>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
             </td>
         </template>

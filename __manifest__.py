@@ -1,6 +1,6 @@
 {
     'name': 'Product Label Extra Format',
-    'version': '16.0.1.4.0',
+    'version': '16.0.1.4.1',
     'category': 'Inventory',
     'summary': "Formats d'étiquette supplémentaires : 3x7 (nom sur une ligne + "
                "fournisseur/date auto-pricing), 2x4 et 2x8 (pain, 3 cm) avec "
