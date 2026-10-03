@@ -13,7 +13,7 @@ class ProductLabelLayout(models.TransientModel):
         selection_add=[
             ('3x7xprice', '3 x 7 with price'),
             ('2x4xingredients', "2 x 4 avec ingrédients et allergènes"),
-            (FORMAT_PAIN, "Pain — ingrédients/allergènes (2 x 6, 4 cm)"),
+            (FORMAT_PAIN, "Pain / Vin — ingrédients ou mots clés (2 x 6, 4 cm)"),
             (FORMAT_MINI, "Mini — 5 x 8, sans code-barres (huile essentielle)"),
         ],
         ondelete={
@@ -35,12 +35,13 @@ class ProductLabelLayout(models.TransientModel):
         self.bread_label_skipped = False
         if self.print_format == FORMAT_PAIN:
             cible = self.product_tmpl_ids or self.product_ids.product_tmpl_id
-            imprimables = cible.filtered(lambda p: p.ingredients)
+            # Un vin n'a pas d'ingrédients : ses mots clés en tiennent lieu.
+            imprimables = cible.filtered(lambda p: p.ingredients or p.x_mots_cles_vin)
             self.bread_label_skipped = ", ".join((cible - imprimables).mapped("name"))
             if not imprimables:
                 raise UserError(_(
-                    "Aucune des fiches sélectionnées n'a d'ingrédients "
-                    "renseignés : rien à imprimer."))
+                    "Aucune des fiches sélectionnées n'a d'ingrédients (ni de "
+                    "mots clés de vin) renseignés : rien à imprimer."))
             if self.product_tmpl_ids:
                 self.product_tmpl_ids = [(6, 0, imprimables.ids)]
             else:
@@ -62,7 +63,7 @@ class ProductLabelLayout(models.TransientModel):
             params = isinstance(resultat, dict) and resultat.get("params")
             if params and params.get("type") == "success":
                 params["message"] += _(
-                    "\n\nNon imprimé (pas d'ingrédients renseignés) : %s"
+                    "\n\nNon imprimé (ni ingrédients ni mots clés renseignés) : %s"
                 ) % self.bread_label_skipped
                 params["sticky"] = True
         return resultat

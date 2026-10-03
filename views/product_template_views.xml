@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!-- Dans l'onglet « Ingrédients & allergènes », puisque les mots clés
+             prennent la place des ingrédients sur l'étiquette 2 x 6. -->
+        <record id="product_template_form_view_mots_cles_vin" model="ir.ui.view">
+            <field name="name">product.template.form.mots.cles.vin</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product_allergen.product_template_form_view_allergen"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='allergens']/group[field[@name='ingredients']]" position="after">
+                    <group string="Vin : mots clés de dégustation">
+                        <field name="x_mots_cles_vin" placeholder="Fruité, cerise, souple, frais, grillades"/>
+                        <field name="x_mots_cles_source" widget="url"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
