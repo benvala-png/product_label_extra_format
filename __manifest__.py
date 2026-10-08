@@ -1,11 +1,11 @@
 {
     'name': 'Product Label Extra Format',
-    'version': '16.0.1.4.1',
+    'version': '16.0.1.5.0',
     'category': 'Inventory',
     'summary': "Formats d'étiquette supplémentaires : 3x7 (nom sur une ligne + "
                "fournisseur/date auto-pricing), 2x4 et 2x8 (pain, 3 cm) avec "
-               "ingrédients et allergènes (ou mots clés des vins), mini 8x10 "
-               "sans code-barres",
+               "ingrédients et allergènes (ou mots clés des vins), mini 5x8 avec "
+               "code-barres",
     'author': 'Benjamin',
     'license': 'LGPL-3',
     'depends': ['product', 'product_auto_pricing', 'product_allergen',

@@ -2,83 +2,58 @@
 <odoo>
     <data>
 
-        <!-- Étiquette mini, ~36 mm de large (5 colonnes sur l'A4) : pour les
-             petits contenants (huiles essentielles, flacons) où une étiquette
-             produit classique (66-97 mm) ne tient pas. Pas de code-barres ni
-             de référence — juste ce qu'un client lit sur le rayon, nom et
-             prix, comme demandé le 2026-09-29.
-             Agrandie de 50% le même jour (24→36 mm, 20→30 mm), puis la
-             police du nom montée à 20px : toujours illisible en pratique,
-             pas à cause de la taille mais parce que TOUT était forcé sur une
-             police fixe et 2 lignes — or les noms vont de 13 à 46 caractères
-             (catalogue Bioflore, une fois la marque retirée). Passage à une
-             taille adaptative, même principe que le format 2x4 ingrédients
-             du même module (`nom_court` / `nom_size`) : plus le nom est
-             long, plus la police descend et plus on autorise de lignes.
-             La marque est retirée de l'affichage (déjà sur 87 des 98 fiches
-             Bioflore actuelles, "Bioflore - Nom - Poids") pour ne pas
-             gâcher de la place avec une information déjà connue en rayon —
-             seulement quand le nom COMMENCE par la marque, jamais si
-             "Bioflore" est ailleurs dans le nom (ex. "Diffuseur par
-             capillarité - Bioflore", marque en suffixe, laissé intact).
-             Hauteur de boîte = 0.86 × lignes × police × 1.2 : facteur
-             empirique qui a évité le reliquat de ligne tronquée sur les deux
-             réglages précédents (41px pour 20px/2 lignes, 33px pour
-             16px/2 lignes — les deux collent exactement à cette formule). -->
+        <!-- Étiquette mini, 36 x 30 mm (5 x 8 sur l'A4) : petits contenants
+             (huiles essentielles, épices). Sans code-barres jusqu'au
+             2026-10-08 ; le code-barres y a été ajouté pour les épices Cook,
+             validé sur les 3 lecteurs du magasin, et Benjamin a demandé de ne
+             garder que cette version.
+
+             Code-barres : 128 px CSS = 4/3 de pouce = 800 points à 600 dpi,
+             image générée en 800 px — même principe que le 3x7 (un pixel de
+             l'image = un point du Canon, aucun rééchantillonnage, voir le
+             commentaire de product_label_report_extra.xml). Le 144 px du 3x7
+             ne tient pas dans 36 mm. 800 / 113 modules = 7,08 points par
+             module, donc plus proche d'un entier que les 7,96 du 3x7 ; le
+             module fait 0,30 mm, soit ~91 % de la taille nominale EAN-13
+             (minimum GS1 : 80 %). Pas de chiffres sous les barres : la place
+             manque, et le client ne les lit pas.
+
+             Empilement, ancré en bas : code-barres (34 px) puis prix (18 px).
+             Le nom prend le haut, 50 px au plus : 2 lignes à 15 ou 13 px, 3 lignes à 11 px
+             au-delà de 26 caractères (« Hydrolat d'Hamamélis bio - 200ml » perdait
+             sa 3e ligne à 13 px).
+             La marque en tête du nom est retirée (Bioflore, Cook) : elle se
+             voit sur le flacon, et on gagne une demi-ligne. -->
         <template id="report_simple_label_mini">
             <t t-set="table_style" t-value="'width:36mm;height:30mm;position:relative;' + table_style"/>
             <td t-att-style="make_invisible and 'visibility:hidden;'">
                 <div class="o_label_full" t-att-style="table_style">
-                    <!-- Même repli que l'étiquette 3x7 : display_name préfixe
-                         la référence interne sur un product.product, jamais
-                         voulu sur une étiquette client. -->
                     <t t-set="nom_etiquette"
                        t-value="product.with_context(display_default_code=False).display_name
                                 if product.is_product_variant else product.name"/>
                     <t t-set="brut" t-value="(nom_etiquette or '').strip()"/>
                     <t t-set="nom_sans_marque"
                        t-value="brut.split('-', 1)[1].strip()
-                                if brut.lower().startswith('bioflore') and '-' in brut
+                                if brut.lower().startswith(('bioflore', 'cook')) and '-' in brut
                                 else brut"/>
-                    <!-- La zone du nom est montée au maximum de ce que la
-                         boîte de 30mm laisse (~113px) une fois le prix
-                         retiré (~30px, ancré en bas).
-                         Piège trouvé le 2026-09-29, DEUX fois de suite :
-                         « Tea Tree - 10ml » puis « Verveine - 200ml »
-                         (16 caractères pile, palier "court") coupaient tous
-                         les deux leur dernière ligne. La hauteur calculée à
-                         lignes × police × 1.2 (+3px) donnait 46px pour 2
-                         lignes à 18px — mesuré insuffisant sur le rendu réel
-                         (capture HTML brute envoyée à la passerelle
-                         d'impression). Le moteur de rendu de la passerelle
-                         prend visiblement plus de place par ligne que
-                         1.2 × la taille de police ne le suppose. On repart
-                         donc d'une marge largement plus généreuse
-                         (× 1.5 + 8px fixes) plutôt que de recalculer au plus
-                         juste une 3e fois — le risque à éviter est de perdre
-                         une ligne utile, pas de gagner quelques mm de vide. -->
                     <t t-set="n" t-value="len(nom_sans_marque)"/>
-                    <t t-set="nom_taille" t-value="18 if n &lt;= 16 else 13"/>
-                    <t t-set="nom_lignes" t-value="2 if n &lt;= 16 else 3"/>
-                    <t t-set="nom_hauteur" t-value="round(nom_lignes * nom_taille * 1.5) + 8"/>
+                    <t t-set="nom_taille" t-value="15 if n &lt;= 18 else (13 if n &lt;= 26 else 11)"/>
                     <div class="o_label_name"
-                         t-attf-style="height:#{nom_hauteur}px;font-size:#{nom_taille}px;line-height:1.2;
+                         t-attf-style="height:50px;font-size:#{nom_taille}px;line-height:1.2;
                                        overflow:hidden;word-wrap:break-word;overflow-wrap:break-word;
                                        word-break:break-word;padding:2px 3px;">
                         <strong t-out="nom_sans_marque"/>
                     </div>
-                    <!-- Ancré en bas de l'étiquette (position absolute dans
-                         .o_label_full, mis en position:relative ci-dessus)
-                         plutôt que juste sous le nom : reste au même
-                         endroit quelle que soit la hauteur prise par le nom,
-                         demandé le 2026-09-29. -->
-                    <div class="text-center" style="padding:2px 3px;position:absolute;left:0;right:0;bottom:2px;">
+                    <div class="text-center" style="position:absolute;left:0;right:0;bottom:38px;line-height:1;">
                         <t t-if="product.is_product_variant">
-                            <strong style="font-size:22px;" t-field="product.lst_price" t-options="{'widget': 'monetary', 'label_price': True}"/>
+                            <strong style="font-size:18px;" t-field="product.lst_price" t-options="{'widget': 'monetary', 'label_price': True}"/>
                         </t>
                         <t t-else="">
-                            <strong style="font-size:22px;" t-field="product.list_price" t-options="{'widget': 'monetary', 'label_price': True}"/>
+                            <strong style="font-size:18px;" t-field="product.list_price" t-options="{'widget': 'monetary', 'label_price': True}"/>
                         </t>
+                    </div>
+                    <div t-if="barcode" style="position:absolute;left:0;right:0;bottom:2px;text-align:center;line-height:0;">
+                        <div t-out="barcode" t-options="{'widget': 'barcode', 'symbology': 'auto', 'width': 800, 'height': 213, 'img_style': 'width:128px;height:34px;display:inline-block'}"/>
                     </div>
                 </div>
             </td>

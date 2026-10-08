@@ -14,7 +14,7 @@ class ProductLabelLayout(models.TransientModel):
             ('3x7xprice', '3 x 7 with price'),
             ('2x4xingredients', "2 x 4 avec ingrédients et allergènes"),
             (FORMAT_PAIN, "Pain / Vin — ingrédients ou mots clés (2 x 6, 4 cm)"),
-            (FORMAT_MINI, "Mini — 5 x 8, sans code-barres (huile essentielle)"),
+            (FORMAT_MINI, "Mini — 5 x 8 avec code-barres (épices, huiles essentielles)"),
         ],
         ondelete={
             '3x7xprice': 'set default',
