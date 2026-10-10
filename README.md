@@ -1,5 +1,9 @@
 # product_label_extra_format (Odoo 16)
 
+> **In English —** Extra formats for Odoo's standard product label wizard, built for an organic grocery: a 3×7 barcode label, a 2×4 display label with ingredients and allergens (for bulk bins and cheese counters), and a bread label. Mandatory text shrinks in steps instead of being cut off.
+
+*Documentation below is in French.*
+
 Addon Odoo 16 qui ajoute trois formats supplémentaires à l'assistant standard
 d'impression d'étiquettes produit : **3×7** (nom sur une ligne + fournisseur/
 date auto-pricing en petit), **2×4 avec ingrédients et allergènes**

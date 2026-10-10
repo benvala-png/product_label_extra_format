@@ -6,7 +6,7 @@
                "fournisseur/date auto-pricing), 2x4 et 2x8 (pain, 3 cm) avec "
                "ingrédients et allergènes (ou mots clés des vins), mini 5x8 avec "
                "code-barres",
-    'author': 'Benjamin',
+    'author': 'Benjamin Van Laethem',
     'license': 'LGPL-3',
     'depends': ['product', 'product_auto_pricing', 'product_allergen',
                 'product_label_direct_print'],
